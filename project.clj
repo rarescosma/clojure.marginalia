@@ -7,7 +7,10 @@
    [org.clojure/tools.namespace "0.2.10"]
    [org.clojure/tools.cli "0.3.3"]
    [org.markdownj/markdownj "0.3.0-1.0.2b4"]
-   [de.ubercode.clostache/clostache "1.4.0"]]
+   [de.ubercode.clostache/clostache "1.4.0"]
+   [pjstadig/humane-test-output "0.8.1"]
+   [spyscope "0.1.5"]
+   ]
 
   :resource-paths ["vendor"]
 

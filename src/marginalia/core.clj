@@ -33,7 +33,9 @@
 ;;
 (ns marginalia.core
   (:require [clojure.java.io :as io]
-            [clojure.string  :as str])
+            [clojure.string  :as str]
+            [spyscope.core]
+            )
   (:use [marginalia
          [html :only (uberdoc-html index-html single-page-html)]
          [parser :only (parse-file parse-ns)]]
@@ -219,9 +221,9 @@
   "Given a collection of filepaths, returns a lazy sequence of filepaths to all
    .clj, .cljs, .cljx, and .cljc files on those paths: directory paths will be searched
    recursively for files."
-  [sources]
+  [root sources]
   (if (nil? sources)
-    (find-processable-file-paths "./src" file-extensions)
+    (find-processable-file-paths (str root "./src") file-extensions)
     (->> sources
          (mapcat #(if (dir? %)
                     (find-processable-file-paths % file-extensions)
@@ -256,7 +258,7 @@
 
    If no source files are found, complain with a usage message."
   [args & [project]]
-  (let [[{:keys [dir file name version desc deps css js multi leiningen exclude]} files help]
+  (let [[{:keys [dir file name version desc deps css js multi leiningen exclude root]} files help]
         (cli args
              ["-d" "--dir" "Directory into which the documentation will be written" :default "./docs"]
              ["-f" "--file" "File into which the documentation will be written" :default "uberdoc.html"]
@@ -272,17 +274,19 @@
              ["-m" "--multi" "Generate each namespace documentation as a separate file" :flag true]
              ["-l" "--leiningen" "Generate the documentation for a Leiningen project file."]
              ["-e" "--exclude" "Exclude source file(s) from the document generation process <file1>;<file2>;...
-                 If not given will be taken from project.clj"])
-        sources (distinct (format-sources (seq files)))
+                 If not given will be taken from project.clj"]
+             ["-r" "--root" "Project root incl ending /. Mostly needed for development of the marginalia." :default "./"]
+             )
+        sources (distinct (format-sources root (seq files)))
         sources (if leiningen (cons leiningen sources) sources)]
     (if-not sources
       (do
         (println "Wrong number of arguments passed to Marginalia.")
         (println help))
-      (binding [*docs* dir]
+      (binding [*docs* (str root dir)]
         (let [project-clj (or project
-                              (when (.exists (io/file "project.clj"))
-                                (parse-project-file)))
+                              (when (.exists (io/file (str root "project.clj")))
+                                (parse-project-file (str root "project.clj"))))
               choose #(or %1 %2)
               marg-opts (merge-with choose
                                     {:css (when css (.split css ";"))
