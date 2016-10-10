@@ -303,7 +303,8 @@
           (dispatch-inner-form form raw nspace-sym)))
 
 (defn extract-docstring [m raw nspace-sym]
-  (let [raw (join "\n" (subvec raw (-> m :start dec) (:end m)))
+  (let [end (min (:end m) (count raw))
+        raw (join "\n" (subvec raw (-> m :start dec) end))
         form (:form m)]
     (dispatch-form form raw nspace-sym)))
 
