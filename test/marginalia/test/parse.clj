@@ -22,3 +22,25 @@
   (let [{:keys [type docstring]} (first (marginalia.parser/parse simple-fn))]
     (is (= :code type))
     (is (= "the docstring" docstring))))
+
+(def simple-fn-s
+  "(s/defn some-fn
+  \"the docstring\"
+  [x]
+  (* x x))")
+
+(deftest test-parse-fn-2-docstring
+  (let [{:keys [type docstring]} (first (marginalia.parser/parse simple-fn-s))]
+    (is (= :code type))
+    (is (= "the docstring" docstring))))
+
+(def simple-fn-s-2
+  "(s/defn some-fn :- s/Any
+  \"the docstring\"
+  [x]
+  (* x x))")
+
+(deftest test-parse-fn-s-2-docstring
+  (let [{:keys [type docstring]} (first (marginalia.parser/parse simple-fn-s-2))]
+    (is (= :code type))
+    (is (= "the docstring" docstring))))

@@ -10,6 +10,7 @@
    [de.ubercode.clostache/clostache "1.4.0"]
    [pjstadig/humane-test-output "0.8.1"]
    [spyscope "0.1.5"]
+   [prismatic/schema "1.1.3"]
    ]
 
   :resource-paths ["vendor"]

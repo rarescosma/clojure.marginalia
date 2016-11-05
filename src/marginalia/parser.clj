@@ -3,6 +3,7 @@
 ;; Clojure parsing solution.
 (ns marginalia.parser
   "Provides the parsing facilities for Marginalia."
+  ;;(:require spyscope.core)
   (:refer-clojure :exclude [replace])
   (:use [clojure [string :only (join replace lower-case)]]
         [cljs.tagged-literals :only [*cljs-data-readers*]]
@@ -21,12 +22,12 @@
 ;; Extracted from clojure.contrib.reflect
 (defn call-method
   "Calls a private or protected method.
- 
+
    params is a vector of classes which correspond to the arguments to
    the method e
- 
+
    obj is nil for static methods, the instance object otherwise.
- 
+
    The method-name is given a symbol or a keyword (something Named)."
   [klass method-name params obj & args]
   (-> klass (.getDeclaredMethod (name method-name)
@@ -257,6 +258,15 @@
   [form raw nspace-sym]
   (extract-common-docstring form raw nspace-sym))
 
+(defmethod dispatch-form 's/defn
+  [form raw nspace-sym]
+  ;; If there is a schema return type, just remove it.
+  (let [form2 (if (= :- (nth form 2))
+                (let [[a b _ t & rest] form]
+                  (cons a (cons b rest)))
+                form)]
+    (extract-common-docstring form2 raw nspace-sym)))
+
 (defmethod dispatch-form 'defn-
   [form raw nspace-sym]
   (extract-common-docstring form raw nspace-sym))
@@ -290,7 +300,7 @@
 (defn- literal-form? [form]
   (or (string? form) (number? form) (keyword? form) (symbol? form)
       (char? form) (true? form) (false? form) (instance? java.util.regex.Pattern form)))
-  
+
 (defmethod dispatch-form :default
   [form raw nspace-sym]
   (cond (literal-form? form)
